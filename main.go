@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 
 	"gee"
@@ -10,21 +8,20 @@ import (
 
 func main() {
 	r := gee.New()
-	r.GET("/", func(w http.ResponseWriter, req *http.Request) {
-		_, err := fmt.Fprintf(w, "URL.Path = %q\n", req.URL.Path)
-		if err != nil {
-			log.Printf("发送response失败：%s", req.URL.Path)
-		}
+	r.GET("/", func(c *gee.Context) {
+		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+	})
+	r.GET("/hello", func(c *gee.Context) {
+		// expect /hello?name=geektutu
+		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
 	})
 
-	r.GET("/hello", func(w http.ResponseWriter, req *http.Request) {
-		for k, v := range req.Header {
-			_, err := fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
-			if err != nil {
-				log.Printf("发送response失败：%s:%s", k, v)
-			}
-		}
+	r.POST("/login", func(c *gee.Context) {
+		c.JSON(http.StatusOK, gee.H{
+			"username": c.PostForm("username"),
+			"password": c.PostForm("password"),
+		})
 	})
 
-	r.Run(":8080")
+	r.Run(":9999")
 }
